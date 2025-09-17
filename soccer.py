@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 
 # Configuración inicial
-st.set_page_config(page_title="SofaScore Yachagua", layout="wide")
+st.set_page_config(page_title="SofaScore", layout="wide")
 
-st.title("⚽ SofaScore Yachagua - Registro de Partido")
+st.title("⚽ Hola Yair Agualimpia - vamos con el minuto a minuto del partido")
 
 # --- Entrada de datos ---
 st.sidebar.header("Registrar evento")
@@ -15,9 +15,9 @@ minuto = st.sidebar.number_input("Minuto", min_value=0, max_value=120, step=1)
 evento = st.sidebar.selectbox(
     "Evento",
     [
-        "Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida","Falta recibida","Gol",
+        "Comienza el encuentro","Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida","Falta recibida","Gol",
         "Pase clave","Pase completado","Pase perdido","Recuperaciones","Regate Exitoso","Regate Fallido",
-        "Tarjeta amarilla","Tarjeta roja","Tiro al arco","Tiro desviado"
+        "Tarjeta amarilla","Tarjeta roja","Tiro al arco","Tiro desviado","Medio Tiempo","Finaliza el encuentro"
     ]
 )
 
