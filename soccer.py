@@ -4,7 +4,7 @@ import pandas as pd
 # Configuración inicial
 st.set_page_config(page_title="SofaScore", layout="wide")
 
-st.title("⚽ Hola Yair Agualimpia - vamos con el minuto a minuto del partido")
+st.title("⚽ Hola Yao, saludos para Thiago :)")
 
 # --- Entrada de datos ---
 st.sidebar.header("Registrar evento")
