@@ -67,10 +67,10 @@ if st.session_state.active_tab == "⚽ Eventos":
         "Evento",
         [
             "Comienza el encuentro","Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida",
-            "Falta recibida","Fuera de lugar","Lesionado","Gol","Pase clave","Pase completado","Pase perdido","Recuperaciones",
-            "Regate Exitoso","Regate Fallido","Tarjeta amarilla","Tarjeta roja","Tiro al arco",
+            "Falta recibida","Fuera de lugar","Lesionado","Gol","Autogol","Pase clave","Pase completado","Pase perdido",
+            "Recuperaciones","Regate Exitoso","Regate Fallido","Tarjeta amarilla","Tarjeta roja","Tiro al arco",
             "Tiro desviado","Tiro de esquina","Comienza el segundo tiempo","Medio Tiempo","Finaliza el encuentro",
-            "Marcador Final","Sustitución Entrada","Sustitución Salida"  # 👈 nuevos eventos
+            "Marcador Final","Sustitución Entrada","Sustitución Salida"
         ]
     )
 
@@ -78,17 +78,25 @@ if st.session_state.active_tab == "⚽ Eventos":
 
     jugador, posicion, equipo = "", "", ""
     eventos_sin_jugador = ["Comienza el encuentro", "Medio Tiempo","Comienza el segundo tiempo", "Finaliza el encuentro", "Marcador Final"]
+    eventos_todos_jugadores = ["Sustitución Entrada", "Sustitución Salida", "Autogol"]
 
     if evento not in eventos_sin_jugador and st.session_state.jugadores:
         equipo = st.selectbox("Equipo", options=list(st.session_state.jugadores.keys()))
         jugadores_equipo = st.session_state.jugadores[equipo]
-        jugador_seleccionado = st.selectbox(
-            "Jugador", 
-            options=[f"{j['nombre']} ({j['posicion']})" for j in jugadores_equipo]
-        )
-        # Dividir nombre y posición
-        jugador = jugador_seleccionado.split(" (")[0]
-        posicion = jugador_seleccionado.split(" (")[1].replace(")", "")
+
+        # Lógica de filtro
+        if evento in eventos_todos_jugadores:
+            jugadores_filtrados = jugadores_equipo  # todos
+        else:
+            jugadores_filtrados = [j for j in jugadores_equipo if j["inicialista"] == "Sí"]
+
+        if jugadores_filtrados:
+            jugador_seleccionado = st.selectbox(
+                "Jugador", 
+                options=[f"{j['nombre']} ({j['posicion']})" for j in jugadores_filtrados]
+            )
+            jugador = jugador_seleccionado.split(" (")[0]
+            posicion = jugador_seleccionado.split(" (")[1].replace(")", "")
 
     # Observación ligada al session_state
     observacion = st.text_area(
