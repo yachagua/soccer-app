@@ -9,7 +9,7 @@ st.set_page_config(page_title="SofaScore", layout="wide")
 # Inicializar almacenamiento
 if "eventos" not in st.session_state:
     st.session_state.eventos = pd.DataFrame(
-        columns=["FechaHora", "Minuto", "Jugador", "Equipo", "Evento", "Observacion"]
+        columns=["FechaHora", "Minuto", "Jugador", "Posicion", "Equipo", "Evento", "Observacion"]
     )
 
 if "jugadores" not in st.session_state:
@@ -36,19 +36,22 @@ if st.session_state.active_tab == "👥 Nóminas":
 
     equipo = st.text_input("Nombre del equipo")
     jugador = st.text_input("Nombre del jugador")
+    posicion = st.text_input("Posición del jugador")  # 👈 nuevo campo
     agregar = st.button("➕ Agregar jugador")
 
-    if agregar and equipo and jugador:
+    if agregar and equipo and jugador and posicion:
         if equipo not in st.session_state.jugadores:
             st.session_state.jugadores[equipo] = []
-        if jugador not in st.session_state.jugadores[equipo]:
-            st.session_state.jugadores[equipo].append(jugador)
-            st.success(f"Jugador {jugador} agregado al equipo {equipo}")
+        jugador_data = {"nombre": jugador, "posicion": posicion}
+        if jugador_data not in st.session_state.jugadores[equipo]:
+            st.session_state.jugadores[equipo].append(jugador_data)
+            st.success(f"Jugador {jugador} ({posicion}) agregado al equipo {equipo}")
 
     if st.session_state.jugadores:
         st.subheader("📋 Nóminas registradas")
         for eq, jugadores in st.session_state.jugadores.items():
-            st.write(f"**{eq}**: {', '.join(jugadores)}")
+            lista_jugadores = [f"{j['nombre']} ({j['posicion']})" for j in jugadores]
+            st.write(f"**{eq}**: {', '.join(lista_jugadores)}")
     else:
         st.info("No hay jugadores registrados todavía.")
 
@@ -68,12 +71,19 @@ if st.session_state.active_tab == "⚽ Eventos":
 
     minuto = st.number_input("Minuto", min_value=0, max_value=120, step=1)
 
-    jugador, equipo = "", ""
+    jugador, posicion, equipo = "", "", ""
     eventos_sin_jugador = ["Comienza el encuentro", "Medio Tiempo", "Finaliza el encuentro", "Marcador Final"]
 
     if evento not in eventos_sin_jugador and st.session_state.jugadores:
         equipo = st.selectbox("Equipo", options=list(st.session_state.jugadores.keys()))
-        jugador = st.selectbox("Jugador", options=st.session_state.jugadores[equipo])
+        jugadores_equipo = st.session_state.jugadores[equipo]
+        jugador_seleccionado = st.selectbox(
+            "Jugador", 
+            options=[f"{j['nombre']} ({j['posicion']})" for j in jugadores_equipo]
+        )
+        # Dividir nombre y posición
+        jugador = jugador_seleccionado.split(" (")[0]
+        posicion = jugador_seleccionado.split(" (")[1].replace(")", "")
 
     # Observación ligada al session_state
     observacion = st.text_area(
@@ -89,6 +99,7 @@ if st.session_state.active_tab == "⚽ Eventos":
             "FechaHora": hora_colombia,
             "Minuto": minuto,
             "Jugador": jugador,
+            "Posicion": posicion,
             "Equipo": equipo,
             "Evento": evento,
             "Observacion": st.session_state.observacion
@@ -110,7 +121,11 @@ if st.session_state.active_tab == "⚽ Eventos":
     # --- Estadísticas ---
     st.subheader("📊 Estadísticas por jugador")
     if not st.session_state.eventos.empty:
-        stats = st.session_state.eventos.groupby(["Jugador", "Evento"]).size().unstack(fill_value=0)
+        # Usar Jugador + Posicion como clave
+        st.session_state.eventos["JugadorCompleto"] = (
+            st.session_state.eventos["Jugador"] + " (" + st.session_state.eventos["Posicion"] + ")"
+        )
+        stats = st.session_state.eventos.groupby(["JugadorCompleto", "Evento"]).size().unstack(fill_value=0)
         st.dataframe(stats, use_container_width=True)
     else:
         st.info("Aún no hay eventos registrados.")
