@@ -65,14 +65,14 @@ if st.session_state.active_tab == "⚽ Eventos":
             "Comienza el encuentro","Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida",
             "Falta recibida","Fuera de lugar","Lesionado","Gol","Pase clave","Pase completado","Pase perdido","Recuperaciones",
             "Regate Exitoso","Regate Fallido","Tarjeta amarilla","Tarjeta roja","Tiro al arco",
-            "Tiro desviado","Tiro de esquina","Comienza la segunda parte","Medio Tiempo","Finaliza el encuentro","Marcador Final","Sustitución"
+            "Tiro desviado","Tiro de esquina","Comienza el segundo tiempo","Medio Tiempo","Finaliza el encuentro","Marcador Final","Sustitución"
         ]
     )
 
     minuto = st.number_input("Minuto", min_value=0, max_value=120, step=1)
 
     jugador, posicion, equipo = "", "", ""
-    eventos_sin_jugador = ["Comienza el encuentro", "Medio Tiempo", "Finaliza el encuentro", "Marcador Final"]
+    eventos_sin_jugador = ["Comienza el encuentro", "Medio Tiempo","Comienza el segundo tiempo", "Finaliza el encuentro", "Marcador Final"]
 
     if evento not in eventos_sin_jugador and st.session_state.jugadores:
         equipo = st.selectbox("Equipo", options=list(st.session_state.jugadores.keys()))
