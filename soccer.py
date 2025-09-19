@@ -65,7 +65,7 @@ if st.session_state.active_tab == "⚽ Eventos":
             "Comienza el encuentro","Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida",
             "Falta recibida","Lesionado","Gol","Pase clave","Pase completado","Pase perdido","Recuperaciones",
             "Regate Exitoso","Regate Fallido","Tarjeta amarilla","Tarjeta roja","Tiro al arco",
-            "Tiro desviado","Medio Tiempo","Finaliza el encuentro","Marcador Final"
+            "Tiro desviado","Tiro de esquina","Medio Tiempo","Finaliza el encuentro","Marcador Final"
         ]
     )
 
