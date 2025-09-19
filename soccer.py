@@ -36,21 +36,25 @@ if st.session_state.active_tab == "👥 Nóminas":
 
     equipo = st.text_input("Nombre del equipo")
     jugador = st.text_input("Nombre del jugador")
-    posicion = st.text_input("Posición del jugador")  # 👈 nuevo campo
+    posicion = st.text_input("Posición del jugador")  # 👈 campo posición
+    inicialista = st.selectbox("¿Inicialista?", ["Sí", "No"])  # 👈 nuevo campo
     agregar = st.button("➕ Agregar jugador")
 
     if agregar and equipo and jugador and posicion:
         if equipo not in st.session_state.jugadores:
             st.session_state.jugadores[equipo] = []
-        jugador_data = {"nombre": jugador, "posicion": posicion}
+        jugador_data = {"nombre": jugador, "posicion": posicion, "inicialista": inicialista}
         if jugador_data not in st.session_state.jugadores[equipo]:
             st.session_state.jugadores[equipo].append(jugador_data)
-            st.success(f"Jugador {jugador} ({posicion}) agregado al equipo {equipo}")
+            st.success(f"Jugador {jugador} ({posicion}) agregado al equipo {equipo} [{inicialista}]")
 
     if st.session_state.jugadores:
         st.subheader("📋 Nóminas registradas")
         for eq, jugadores in st.session_state.jugadores.items():
-            lista_jugadores = [f"{j['nombre']} ({j['posicion']})" for j in jugadores]
+            lista_jugadores = [
+                f"{j['nombre']} ({j['posicion']}) - Inicialista: {j['inicialista']}"
+                for j in jugadores
+            ]
             st.write(f"**{eq}**: {', '.join(lista_jugadores)}")
     else:
         st.info("No hay jugadores registrados todavía.")
@@ -65,7 +69,8 @@ if st.session_state.active_tab == "⚽ Eventos":
             "Comienza el encuentro","Asistencia","Balón Perdido","Duelo Ganado","Duelo Perdido","Falta cometida",
             "Falta recibida","Fuera de lugar","Lesionado","Gol","Pase clave","Pase completado","Pase perdido","Recuperaciones",
             "Regate Exitoso","Regate Fallido","Tarjeta amarilla","Tarjeta roja","Tiro al arco",
-            "Tiro desviado","Tiro de esquina","Comienza el segundo tiempo","Medio Tiempo","Finaliza el encuentro","Marcador Final","Sustitución"
+            "Tiro desviado","Tiro de esquina","Comienza el segundo tiempo","Medio Tiempo","Finaliza el encuentro",
+            "Marcador Final","Sustitución Entrada","Sustitución Salida"  # 👈 nuevos eventos
         ]
     )
 
@@ -120,12 +125,49 @@ if st.session_state.active_tab == "⚽ Eventos":
 
     # --- Estadísticas ---
     st.subheader("📊 Estadísticas por jugador")
+
+    def calcular_minutos(nomina_dict, eventos_df, duracion=90):
+        resultados = []
+        for equipo, jugadores in nomina_dict.items():
+            for j in jugadores:
+                jugador = j["nombre"]
+                posicion = j["posicion"]
+                inicialista = j["inicialista"]
+
+                # Minuto de inicio
+                if inicialista == "Sí":
+                    inicio = 0
+                else:
+                    entradas = eventos_df[(eventos_df["Jugador"] == jugador) & 
+                                          (eventos_df["Evento"] == "Sustitución Entrada")]
+                    inicio = entradas["Minuto"].min() if not entradas.empty else None
+
+                # Minuto de salida
+                salidas = eventos_df[(eventos_df["Jugador"] == jugador) & 
+                                     (eventos_df["Evento"] == "Sustitución Salida")]
+                fin = salidas["Minuto"].min() if not salidas.empty else duracion
+
+                # Cálculo
+                if inicio is not None:
+                    minutos = fin - inicio
+                else:
+                    minutos = 0
+
+                resultados.append([jugador, posicion, equipo, inicialista, minutos])
+        
+        return pd.DataFrame(resultados, columns=["Jugador", "Posición", "Equipo", "Inicialista", "Minutos Jugados"])
+
     if not st.session_state.eventos.empty:
-        # Usar Jugador + Posicion como clave
+        # Estadísticas de eventos
         st.session_state.eventos["JugadorCompleto"] = (
             st.session_state.eventos["Jugador"] + " (" + st.session_state.eventos["Posicion"] + ")"
         )
-        stats = st.session_state.eventos.groupby(["JugadorCompleto", "Evento"]).size().unstack(fill_value=0)
-        st.dataframe(stats, use_container_width=True)
+        stats_eventos = st.session_state.eventos.groupby(["JugadorCompleto", "Evento"]).size().unstack(fill_value=0)
+        st.dataframe(stats_eventos, use_container_width=True)
+
+        # Minutos jugados
+        df_minutos = calcular_minutos(st.session_state.jugadores, st.session_state.eventos, duracion=90)
+        st.subheader("⏱️ Minutos jugados")
+        st.dataframe(df_minutos, use_container_width=True)
     else:
         st.info("Aún no hay eventos registrados.")
